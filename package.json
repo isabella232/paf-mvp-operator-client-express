@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "update": "git submodule foreach --recursive \"git checkout main; git pull\"",
+    "update": "git submodule update; git submodule foreach --recursive \"git checkout main; git pull; npm run update\"",
     "build": "tsc"
   },
   "repository": {
