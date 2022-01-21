@@ -4,7 +4,9 @@
   "description": "Prebid Addressability Framework (PAF) Operator client: ExpressJS implementation",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "update": "git submodule foreach \"git checkout main; git pull\"",
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
@@ -18,13 +20,15 @@
   "homepage": "https://github.com/criteo/paf-mvp-operator-client-express#readme",
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^4.17.2",
+    "express": "^4.17.1",
     "ua-parser-js": "^1.0.2",
-    "winston": "^3.4.0"
+    "winston": "^3.4.0",
+    "paf-core": "file:./paf-mvp-core-js"
   },
   "devDependencies": {
     "@types/cors": "^2.8.12",
-    "@types/express": "^4.17.13",
-    "@types/ua-parser-js": "^0.7.36"
+    "@types/express": "^4.17.1",
+    "@types/ua-parser-js": "^0.7.36",
+    "typescript": "^4.5.4"
   }
 }
