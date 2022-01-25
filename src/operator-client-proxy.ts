@@ -1,11 +1,11 @@
 import {Express} from "express";
 import cors, {CorsOptions} from "cors";
 import {OperatorClient} from "./operator-client";
-import {GetIdPrefsResponse, IdAndPrefs} from "../paf-mvp-core-js/src/model/generated-model";
-import {NewPrefs} from "../paf-mvp-core-js/src/model/model";
-import {jsonEndpoints, redirectEndpoints, signAndVerifyEndpoints, uriParams} from "../paf-mvp-core-js/src/endpoints";
-import {getMandatoryQueryStringParam, getReturnUrl, httpRedirect} from "../paf-mvp-core-js/src/express";
-import {PublicKeys} from "../paf-mvp-core-js/src/crypto/keys";
+import {GetIdPrefsResponse, IdAndPrefs} from "paf-mvp-core-js/src/model/generated-model";
+import {NewPrefs} from "paf-mvp-core-js/src/model/model";
+import {jsonEndpoints, redirectEndpoints, signAndVerifyEndpoints, uriParams} from "paf-mvp-core-js/src/endpoints";
+import {getMandatoryQueryStringParam, getReturnUrl, httpRedirect} from "paf-mvp-core-js/src/express";
+import {PublicKeys} from "paf-mvp-core-js/src/crypto/keys";
 
 export const addOperatorClientProxyEndpoints = (app: Express, protocol: 'https'|'http', operatorHost: string, sender: string, privateKey: string, allowedOrigins: string[], publicKeys: PublicKeys) => {
     const client = new OperatorClient(protocol, operatorHost, sender, privateKey, publicKeys)

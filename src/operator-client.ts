@@ -6,16 +6,16 @@ import {
     IdAndPrefs,
     PostIdPrefsRequest,
     Preferences
-} from "../paf-mvp-core-js/src/model/generated-model";
-import {UnsignedData, UnsignedMessage} from "../paf-mvp-core-js/src/model/model";
+} from "paf-mvp-core-js/src/model/generated-model";
+import {UnsignedData, UnsignedMessage} from "paf-mvp-core-js/src/model/model";
 import {
     GetIdPrefsRequestSigner,
     GetIdPrefsResponseSigner,
     PostIdPrefsRequestSigner
-} from "../paf-mvp-core-js/src/crypto/message-signature";
-import {PrefsSigner} from "../paf-mvp-core-js/src/crypto/data-signature";
-import {PrivateKey, privateKeyFromString, PublicKeys} from "../paf-mvp-core-js/src/crypto/keys";
-import {jsonEndpoints, redirectEndpoints, uriParams} from "../paf-mvp-core-js/src/endpoints";
+} from "paf-mvp-core-js/src/crypto/message-signature";
+import {PrefsSigner} from "paf-mvp-core-js/src/crypto/data-signature";
+import {PrivateKey, privateKeyFromString, PublicKeys} from "paf-mvp-core-js/src/crypto/keys";
+import {jsonEndpoints, redirectEndpoints, uriParams} from "paf-mvp-core-js/src/endpoints";
 
 // TODO all these methods should have signed messages
 export class OperatorClient {
