@@ -2,12 +2,12 @@ import {Request, Response} from "express";
 import {OperatorClient,} from "./operator-client";
 import winston from "winston";
 import UAParser from "ua-parser-js";
-import {GetIdPrefsResponse, IdAndOptionalPrefs} from "../paf-mvp-core-js/src/model/generated-model";
-import {Cookies, fromCookieValues, getPrebidDataCacheExpiration, UNKNOWN_TO_OPERATOR} from "../paf-mvp-core-js/src/cookies";
-import {httpRedirect, metaRedirect, setCookie} from "../paf-mvp-core-js/src/express";
-import {uriParams} from "../paf-mvp-core-js/src/endpoints";
-import {isBrowserKnownToSupport3PC} from "../paf-mvp-core-js/src/user-agent";
-import {PublicKeys} from "../paf-mvp-core-js/src/crypto/keys";
+import {GetIdPrefsResponse, IdAndOptionalPrefs} from "paf-mvp-core-js/src/model/generated-model";
+import {Cookies, fromCookieValues, getPrebidDataCacheExpiration, UNKNOWN_TO_OPERATOR} from "paf-mvp-core-js/src/cookies";
+import {httpRedirect, metaRedirect, setCookie} from "paf-mvp-core-js/src/express";
+import {uriParams} from "paf-mvp-core-js/src/endpoints";
+import {isBrowserKnownToSupport3PC} from "paf-mvp-core-js/src/user-agent";
+import {PublicKeys} from "paf-mvp-core-js/src/crypto/keys";
 
 export enum RedirectType {
     http = "http",

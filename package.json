@@ -5,7 +5,6 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "update": "git submodule update; git submodule foreach --recursive \"git checkout main; git pull; npm run update\"",
     "build": "tsc"
   },
   "repository": {
@@ -23,7 +22,7 @@
     "express": "^4.17.1",
     "ua-parser-js": "^1.0.2",
     "winston": "^3.4.0",
-    "paf-core": "file:./paf-mvp-core-js"
+    "paf-mvp-core-js": "criteo/paf-mvp-core-js#semver:0.0.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.12",
