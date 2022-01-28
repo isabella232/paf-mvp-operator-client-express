@@ -2,7 +2,7 @@ import {Request, Response} from "express";
 import {OperatorClient,} from "./operator-client";
 import winston from "winston";
 import UAParser from "ua-parser-js";
-import {GetIdPrefsResponse, IdAndOptionalPrefs} from "paf-mvp-core-js/src/model/generated-model";
+import {GetIdPrefsResponse, IdAndOptionalPreferences} from "paf-mvp-core-js/src/model/generated-model";
 import {Cookies, fromCookieValues, getPrebidDataCacheExpiration, UNKNOWN_TO_OPERATOR} from "paf-mvp-core-js/src/cookies";
 import {httpRedirect, metaRedirect, setCookie} from "paf-mvp-core-js/src/express";
 import {uriParams} from "paf-mvp-core-js/src/endpoints";
@@ -57,7 +57,7 @@ export class OperatorBackendClient {
         this.client = new OperatorClient(protocol, host, sender, privateKey, publicKeys)
     }
 
-    getIdAndPreferencesOrRedirect(req: Request, res: Response, view: string): IdAndOptionalPrefs|undefined {
+    getIdAndPreferencesOrRedirect(req: Request, res: Response, view: string): IdAndOptionalPreferences|undefined {
         const uriData = req.query[uriParams.data] as string
 
         const foundData = this.processGetIdAndPreferencesOrRedirect(req, uriData, res, view);
@@ -71,7 +71,7 @@ export class OperatorBackendClient {
         return foundData;
     }
 
-    private processGetIdAndPreferencesOrRedirect(req: Request, uriData: string, res: Response, view: string): IdAndOptionalPrefs|undefined {
+    private processGetIdAndPreferencesOrRedirect(req: Request, uriData: string, res: Response, view: string): IdAndOptionalPreferences|undefined {
         // 1. Any Prebid 1st party cookie?
         const cookies = getCookies(req);
 

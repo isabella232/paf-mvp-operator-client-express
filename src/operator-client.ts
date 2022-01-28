@@ -2,8 +2,8 @@ import {
     GetIdPrefsRequest,
     GetIdPrefsResponse,
     GetNewIdRequest,
-    Id,
-    IdAndPrefs,
+    Identifier,
+    IdAndPreferences,
     PostIdPrefsRequest,
     Preferences
 } from "paf-mvp-core-js/src/model/generated-model";
@@ -42,7 +42,7 @@ export class OperatorClient {
         return this.readVerifier.verify(this.publicKeys[message.sender], message)
     }
 
-    buildPostIdPrefsRequest(idAndPreferences: IdAndPrefs, timestamp = new Date().getTime()): PostIdPrefsRequest {
+    buildPostIdPrefsRequest(idAndPreferences: IdAndPreferences, timestamp = new Date().getTime()): PostIdPrefsRequest {
         const request: UnsignedMessage<PostIdPrefsRequest> = {
             body: idAndPreferences,
             sender: this.host,
@@ -87,7 +87,7 @@ export class OperatorClient {
         return url
     }
 
-    getRedirectWriteUrl(idAndPreferences: IdAndPrefs, redirectUrl: string): URL {
+    getRedirectWriteUrl(idAndPreferences: IdAndPreferences, redirectUrl: string): URL {
         if (!(idAndPreferences.identifiers.length > 0 || idAndPreferences.preferences)) {
             throw "Need something to write!"
         }
@@ -103,8 +103,6 @@ export class OperatorClient {
     getJsonReadUrl(): URL {
         const url = this.getOperatorUrl(jsonEndpoints.read);
 
-        const message = this.buildGetIdPrefsRequest();
-
         this.addReadQS(url);
 
         return url
@@ -119,11 +117,11 @@ export class OperatorClient {
         return this.getOperatorUrl(jsonEndpoints.verify3PC)
     }
 
-    buildPreferences(id: Id, optIn: boolean, timestamp = new Date().getTime()): Preferences {
+    buildPreferences(id: Identifier, optIn: boolean, timestamp = new Date().getTime()): Preferences {
         const unsignedPreferences: UnsignedData<Preferences> = {
             version: 0,
             data: {
-                opt_in: true
+                use_browsing_for_personalization: true
             },
             source: {
                 domain: this.host,
