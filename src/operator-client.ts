@@ -2,20 +2,20 @@ import {
     GetIdPrefsRequest,
     GetIdPrefsResponse,
     GetNewIdRequest,
-    Id,
-    IdAndPrefs,
+    Identifier,
+    IdAndPreferences,
     PostIdPrefsRequest,
     Preferences
-} from "paf-mvp-core-js/src/model/generated-model";
-import {UnsignedData, UnsignedMessage} from "paf-mvp-core-js/src/model/model";
+} from "paf-mvp-core-js/dist/model/generated-model";
+import {UnsignedData, UnsignedMessage} from "paf-mvp-core-js/dist/model/model";
 import {
     GetIdPrefsRequestSigner,
     GetIdPrefsResponseSigner,
     PostIdPrefsRequestSigner
-} from "paf-mvp-core-js/src/crypto/message-signature";
-import {PrefsSigner} from "paf-mvp-core-js/src/crypto/data-signature";
-import {PrivateKey, privateKeyFromString, PublicKeys} from "paf-mvp-core-js/src/crypto/keys";
-import {jsonEndpoints, redirectEndpoints, uriParams} from "paf-mvp-core-js/src/endpoints";
+} from "paf-mvp-core-js/dist/crypto/message-signature";
+import {PrefsSigner} from "paf-mvp-core-js/dist/crypto/data-signature";
+import {PrivateKey, privateKeyFromString, PublicKeys} from "paf-mvp-core-js/dist/crypto/keys";
+import {jsonEndpoints, redirectEndpoints, uriParams} from "paf-mvp-core-js/dist/endpoints";
 
 // TODO all these methods should have signed messages
 export class OperatorClient {
@@ -42,7 +42,7 @@ export class OperatorClient {
         return this.readVerifier.verify(this.publicKeys[message.sender], message)
     }
 
-    buildPostIdPrefsRequest(idAndPreferences: IdAndPrefs, timestamp = new Date().getTime()): PostIdPrefsRequest {
+    buildPostIdPrefsRequest(idAndPreferences: IdAndPreferences, timestamp = new Date().getTime()): PostIdPrefsRequest {
         const request: UnsignedMessage<PostIdPrefsRequest> = {
             body: idAndPreferences,
             sender: this.host,
@@ -87,7 +87,7 @@ export class OperatorClient {
         return url
     }
 
-    getRedirectWriteUrl(idAndPreferences: IdAndPrefs, redirectUrl: string): URL {
+    getRedirectWriteUrl(idAndPreferences: IdAndPreferences, redirectUrl: string): URL {
         if (!(idAndPreferences.identifiers.length > 0 || idAndPreferences.preferences)) {
             throw "Need something to write!"
         }
@@ -119,11 +119,11 @@ export class OperatorClient {
         return this.getOperatorUrl(jsonEndpoints.verify3PC)
     }
 
-    buildPreferences(id: Id, optIn: boolean, timestamp = new Date().getTime()): Preferences {
+    buildPreferences(id: Identifier, optIn: boolean, timestamp = new Date().getTime()): Preferences {
         const unsignedPreferences: UnsignedData<Preferences> = {
             version: 0,
             data: {
-                opt_in: true
+                use_browsing_for_personalization: true
             },
             source: {
                 domain: this.host,

@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Prebid Addressability Framework (PAF) Operator client: ExpressJS implementation",
   "main": "index.js",
+  "type": "commonjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc"
@@ -22,7 +23,7 @@
     "express": "^4.17.1",
     "ua-parser-js": "^1.0.2",
     "winston": "^3.4.0",
-    "paf-mvp-core-js": "criteo/paf-mvp-core-js#semver:0.0.1"
+    "paf-mvp-core-js": "criteo/paf-mvp-core-js#32cfcf84a5677a1a50ed034aa4acfc00cbc0841c"
   },
   "devDependencies": {
     "@types/cors": "^2.8.12",
