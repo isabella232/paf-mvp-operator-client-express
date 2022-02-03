@@ -1,11 +1,11 @@
 import {Express} from "express";
 import cors, {CorsOptions} from "cors";
 import {OperatorClient} from "./operator-client";
-import {GetIdPrefsResponse, IdAndPrefs} from "paf-mvp-core-js/src/model/generated-model";
-import {NewPrefs} from "paf-mvp-core-js/src/model/model";
-import {jsonEndpoints, redirectEndpoints, signAndVerifyEndpoints, uriParams} from "paf-mvp-core-js/src/endpoints";
-import {getMandatoryQueryStringParam, getReturnUrl, httpRedirect} from "paf-mvp-core-js/src/express";
-import {PublicKeys} from "paf-mvp-core-js/src/crypto/keys";
+import {GetIdPrefsResponse, IdAndPreferences} from "paf-mvp-core-js/dist/model/generated-model";
+import {NewPrefs} from "paf-mvp-core-js/dist/model/model";
+import {jsonEndpoints, redirectEndpoints, signAndVerifyEndpoints, uriParams} from "paf-mvp-core-js/dist/endpoints";
+import {getMandatoryQueryStringParam, getReturnUrl, httpRedirect} from "paf-mvp-core-js/dist/express";
+import {PublicKeys} from "paf-mvp-core-js/dist/crypto/keys";
 
 export const addOperatorClientProxyEndpoints = (app: Express, protocol: 'https'|'http', operatorHost: string, sender: string, privateKey: string, allowedOrigins: string[], publicKeys: PublicKeys) => {
     const client = new OperatorClient(protocol, operatorHost, sender, privateKey, publicKeys)
@@ -30,7 +30,7 @@ export const addOperatorClientProxyEndpoints = (app: Express, protocol: 'https'|
 
     app.get(`/prebid${redirectEndpoints.write}`, cors(corsOptions), (req, res) => {
         const returnUrl = getReturnUrl(req, res);
-        const input = JSON.parse(getMandatoryQueryStringParam(req, res, uriParams.data)) as IdAndPrefs;
+        const input = JSON.parse(getMandatoryQueryStringParam(req, res, uriParams.data)) as IdAndPreferences;
         if (returnUrl) {
             // Note: signature is done on the fly
             httpRedirect(res, client.getRedirectWriteUrl(input, returnUrl.toString()).toString(), 302)
@@ -70,7 +70,7 @@ export const addOperatorClientProxyEndpoints = (app: Express, protocol: 'https'|
     });
 
     app.post(`/prebid${signAndVerifyEndpoints.signWrite}`, cors(corsOptions), (req, res) => {
-        const message = JSON.parse(req.body as string) as IdAndPrefs;
+        const message = JSON.parse(req.body as string) as IdAndPreferences;
         res.send(client.buildPostIdPrefsRequest(message))
     });
 }
