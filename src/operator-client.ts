@@ -1,17 +1,17 @@
 import {
-    GetIdPrefsRequest,
-    GetIdPrefsResponse,
+    GetIdsPrefsRequest,
+    GetIdsPrefsResponse,
     GetNewIdRequest,
     Identifier,
-    IdAndPreferences,
-    PostIdPrefsRequest,
+    IdsAndPreferences,
+    PostIdsPrefsRequest,
     Preferences
 } from "paf-mvp-core-js/dist/model/generated-model";
 import {UnsignedData, UnsignedMessage} from "paf-mvp-core-js/dist/model/model";
 import {
-    GetIdPrefsRequestSigner,
-    GetIdPrefsResponseSigner,
-    PostIdPrefsRequestSigner
+    GetIdsPrefsRequestSigner,
+    GetIdsPrefsResponseSigner,
+    PostIdsPrefsRequestSigner
 } from "paf-mvp-core-js/dist/crypto/message-signature";
 import {PrefsSigner} from "paf-mvp-core-js/dist/crypto/data-signature";
 import {PrivateKey, privateKeyFromString, PublicKeys} from "paf-mvp-core-js/dist/crypto/keys";
@@ -19,9 +19,9 @@ import {jsonEndpoints, redirectEndpoints, uriParams} from "paf-mvp-core-js/dist/
 
 // TODO all these methods should have signed messages
 export class OperatorClient {
-    private readonly writeSigner = new PostIdPrefsRequestSigner()
-    private readonly readSigner= new GetIdPrefsRequestSigner()
-    private readonly readVerifier = new GetIdPrefsResponseSigner()
+    private readonly writeSigner = new PostIdsPrefsRequestSigner()
+    private readonly readSigner= new GetIdsPrefsRequestSigner()
+    private readonly readVerifier = new GetIdsPrefsResponseSigner()
     private readonly prefsSigner = new PrefsSigner();
     private readonly ecdsaKey: PrivateKey;
 
@@ -30,7 +30,7 @@ export class OperatorClient {
     }
 
     private addReadQS(url: URL) {
-        const message = this.buildGetIdPrefsRequest();
+        const message = this.buildGetIdsPrefsRequest();
 
         url.searchParams.set(uriParams.sender, message.sender)
         url.searchParams.set(uriParams.receiver, message.receiver)
@@ -38,13 +38,13 @@ export class OperatorClient {
         url.searchParams.set(uriParams.signature, message.signature)
     }
 
-    verifyReadResponseSignature(message: GetIdPrefsResponse): boolean {
+    verifyReadResponseSignature(message: GetIdsPrefsResponse): boolean {
         return this.readVerifier.verify(this.publicKeys[message.sender], message)
     }
 
-    buildPostIdPrefsRequest(idAndPreferences: IdAndPreferences, timestamp = new Date().getTime()): PostIdPrefsRequest {
-        const request: UnsignedMessage<PostIdPrefsRequest> = {
-            body: idAndPreferences,
+    buildPostIdsPrefsRequest(IdsAndPreferences: IdsAndPreferences, timestamp = new Date().getTime()): PostIdsPrefsRequest {
+        const request: UnsignedMessage<PostIdsPrefsRequest> = {
+            body: IdsAndPreferences,
             sender: this.host,
             receiver: this.operatorHost,
             timestamp
@@ -55,8 +55,8 @@ export class OperatorClient {
         };
     }
 
-    buildGetIdPrefsRequest(timestamp = new Date().getTime()): GetIdPrefsRequest {
-        const request: UnsignedMessage<GetIdPrefsRequest> = {
+    buildGetIdsPrefsRequest(timestamp = new Date().getTime()): GetIdsPrefsRequest {
+        const request: UnsignedMessage<GetIdsPrefsRequest> = {
             sender: this.host,
             receiver: this.operatorHost,
             timestamp
@@ -87,11 +87,11 @@ export class OperatorClient {
         return url
     }
 
-    getRedirectWriteUrl(idAndPreferences: IdAndPreferences, redirectUrl: string): URL {
-        if (!(idAndPreferences.identifiers.length > 0 || idAndPreferences.preferences)) {
+    getRedirectWriteUrl(IdsAndPreferences: IdsAndPreferences, redirectUrl: string): URL {
+        if (!(IdsAndPreferences.identifiers.length > 0 || IdsAndPreferences.preferences)) {
             throw "Need something to write!"
         }
-        const message = this.buildPostIdPrefsRequest(idAndPreferences);
+        const message = this.buildPostIdsPrefsRequest(IdsAndPreferences);
 
         const url = this.getOperatorUrl(redirectEndpoints.write, redirectUrl);
 
@@ -103,7 +103,7 @@ export class OperatorClient {
     getJsonReadUrl(): URL {
         const url = this.getOperatorUrl(jsonEndpoints.read);
 
-        const message = this.buildGetIdPrefsRequest();
+        const message = this.buildGetIdsPrefsRequest();
 
         this.addReadQS(url);
 

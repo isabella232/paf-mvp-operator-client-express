@@ -2,7 +2,7 @@ import {Request, Response} from "express";
 import {OperatorClient,} from "./operator-client";
 import winston from "winston";
 import UAParser from "ua-parser-js";
-import {GetIdPrefsResponse, IdAndOptionalPreferences} from "paf-mvp-core-js/dist/model/generated-model";
+import {GetIdsPrefsResponse, IdsAndOptionalPreferences} from "paf-mvp-core-js/dist/model/generated-model";
 import {Cookies, fromCookieValues, getPrebidDataCacheExpiration, UNKNOWN_TO_OPERATOR} from "paf-mvp-core-js/dist/cookies";
 import {httpRedirect, metaRedirect, setCookie} from "paf-mvp-core-js/dist/express";
 import {uriParams} from "paf-mvp-core-js/dist/endpoints";
@@ -57,10 +57,10 @@ export class OperatorBackendClient {
         this.client = new OperatorClient(protocol, host, sender, privateKey, publicKeys)
     }
 
-    getIdAndPreferencesOrRedirect(req: Request, res: Response, view: string): IdAndOptionalPreferences|undefined {
+    getIdsAndPreferencesOrRedirect(req: Request, res: Response, view: string): IdsAndOptionalPreferences|undefined {
         const uriData = req.query[uriParams.data] as string
 
-        const foundData = this.processGetIdAndPreferencesOrRedirect(req, uriData, res, view);
+        const foundData = this.processGetIdsAndPreferencesOrRedirect(req, uriData, res, view);
 
         if (foundData) {
             logger.info('Serve HTML', foundData)
@@ -71,7 +71,7 @@ export class OperatorBackendClient {
         return foundData;
     }
 
-    private processGetIdAndPreferencesOrRedirect(req: Request, uriData: string, res: Response, view: string): IdAndOptionalPreferences|undefined {
+    private processGetIdsAndPreferencesOrRedirect(req: Request, uriData: string, res: Response, view: string): IdsAndOptionalPreferences|undefined {
         // 1. Any Prebid 1st party cookie?
         const cookies = getCookies(req);
 
@@ -89,7 +89,7 @@ export class OperatorBackendClient {
         // 2. Redirected from operator?
         if (uriData) {
             logger.info('Redirected from operator: YES')
-            const operatorData = JSON.parse(uriData ?? '{}') as GetIdPrefsResponse
+            const operatorData = JSON.parse(uriData ?? '{}') as GetIdsPrefsResponse
 
             if (!this.client.verifyReadResponseSignature(operatorData)) {
                 throw 'Verification failed'
