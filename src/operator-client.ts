@@ -18,14 +18,15 @@ import {PrivateKey, privateKeyFromString, PublicKeys} from "paf-mvp-core-js/dist
 import {jsonEndpoints, redirectEndpoints, uriParams} from "paf-mvp-core-js/dist/endpoints";
 
 // TODO all these methods should have signed messages
+// FIXME use url builders instead of specific methods here
 export class OperatorClient {
     private readonly writeSigner = new PostIdsPrefsRequestSigner()
-    private readonly readSigner= new GetIdsPrefsRequestSigner()
+    private readonly readSigner = new GetIdsPrefsRequestSigner()
     private readonly readVerifier = new GetIdsPrefsResponseSigner()
     private readonly prefsSigner = new PrefsSigner();
     private readonly ecdsaKey: PrivateKey;
 
-    constructor(protected protocol: 'https'|'http', public operatorHost: string, private host: string, privateKey: string, protected publicKeys: PublicKeys) {
+    constructor(protected protocol: 'https' | 'http', public operatorHost: string, private host: string, privateKey: string, protected publicKeys: PublicKeys) {
         this.ecdsaKey = privateKeyFromString(privateKey);
     }
 
@@ -152,3 +153,4 @@ export class OperatorClient {
         return redirectUrl;
     }
 }
+
