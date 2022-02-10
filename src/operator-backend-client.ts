@@ -2,12 +2,21 @@ import {Request, Response} from "express";
 import {OperatorClient,} from "./operator-client";
 import winston from "winston";
 import UAParser from "ua-parser-js";
-import {GetIdsPrefsResponse, IdsAndOptionalPreferences} from "paf-mvp-core-js/dist/model/generated-model";
-import {Cookies, fromCookieValues, getPrebidDataCacheExpiration, UNKNOWN_TO_OPERATOR} from "paf-mvp-core-js/dist/cookies";
-import {httpRedirect, metaRedirect, setCookie} from "paf-mvp-core-js/dist/express";
-import {uriParams} from "paf-mvp-core-js/dist/endpoints";
+import {
+    GetIdsPrefsResponse,
+    IdsAndOptionalPreferences,
+    RedirectGetIdsPrefsResponse
+} from "paf-mvp-core-js/dist/model/generated-model";
+import {
+    Cookies,
+    fromCookieValues,
+    getPrebidDataCacheExpiration,
+    UNKNOWN_TO_OPERATOR
+} from "paf-mvp-core-js/dist/cookies";
+import {httpRedirect, metaRedirect, setCookie, getPafDataFromQueryString} from "paf-mvp-core-js/dist/express";
 import {isBrowserKnownToSupport3PC} from "paf-mvp-core-js/dist/user-agent";
 import {PublicKeys} from "paf-mvp-core-js/dist/crypto/keys";
+import {GetIdsPrefsRequestBuilder} from "paf-mvp-core-js/dist/model/request-builders";
 
 export enum RedirectType {
     http = "http",
@@ -32,9 +41,9 @@ if (process.env.NODE_ENV !== 'production') {
 
 export const getCookies = (req: Request) => req.cookies ?? {}
 
-export const getRequestUrl = (req: Request, path = req.url) => new URL(path, `${req.protocol}://${req.get('host')}`).toString()
+export const getRequestUrl = (req: Request, path = req.url) => new URL(path, `${req.protocol}://${req.get('host')}`)
 
-const saveCookieValueOrUnknown = <T>(res: Response, cookieName: string, cookieValue: T|undefined) => {
+const saveCookieValueOrUnknown = <T>(res: Response, cookieName: string, cookieValue: T | undefined) => {
     logger.info(`Operator returned value for ${cookieName}: ${cookieValue !== undefined ? 'YES' : 'NO'}`)
 
     const valueToStore = cookieValue ? JSON.stringify(cookieValue) : UNKNOWN_TO_OPERATOR
@@ -48,17 +57,20 @@ const saveCookieValueOrUnknown = <T>(res: Response, cookieName: string, cookieVa
 
 export class OperatorBackendClient {
     client: OperatorClient;
+    private getIdsPrefsRequestBuilder: GetIdsPrefsRequestBuilder;
 
-    constructor(protocol: 'https'|'http', host: string, sender: string, privateKey: string, protected publicKeys: PublicKeys, private redirectType: RedirectType = RedirectType.http) {
+    constructor(protocol: 'https' | 'http', host: string, sender: string, privateKey: string, protected publicKeys: PublicKeys, private redirectType: RedirectType = RedirectType.http) {
         if (![RedirectType.http, RedirectType.meta].includes(redirectType)) {
             throw "Only backend redirect types are supported"
         }
 
+        this.getIdsPrefsRequestBuilder = new GetIdsPrefsRequestBuilder(protocol, host, sender, privateKey)
+
         this.client = new OperatorClient(protocol, host, sender, privateKey, publicKeys)
     }
 
-    getIdsAndPreferencesOrRedirect(req: Request, res: Response, view: string): IdsAndOptionalPreferences|undefined {
-        const uriData = req.query[uriParams.data] as string
+    getIdsAndPreferencesOrRedirect(req: Request, res: Response, view: string): IdsAndOptionalPreferences | undefined {
+        const uriData = getPafDataFromQueryString<RedirectGetIdsPrefsResponse>(req);
 
         const foundData = this.processGetIdsAndPreferencesOrRedirect(req, uriData, res, view);
 
@@ -71,7 +83,7 @@ export class OperatorBackendClient {
         return foundData;
     }
 
-    private processGetIdsAndPreferencesOrRedirect(req: Request, uriData: string, res: Response, view: string): IdsAndOptionalPreferences|undefined {
+    private processGetIdsAndPreferencesOrRedirect(req: Request, uriData: RedirectGetIdsPrefsResponse | undefined, res: Response, view: string): IdsAndOptionalPreferences | undefined {
         // 1. Any Prebid 1st party cookie?
         const cookies = getCookies(req);
 
@@ -89,7 +101,13 @@ export class OperatorBackendClient {
         // 2. Redirected from operator?
         if (uriData) {
             logger.info('Redirected from operator: YES')
-            const operatorData = JSON.parse(uriData ?? '{}') as GetIdsPrefsResponse
+
+            if (!uriData.response) {
+                // FIXME do something smart in case of error
+                throw uriData.error
+            }
+
+            const operatorData = uriData.response
 
             if (!this.client.verifyReadResponseSignature(operatorData)) {
                 throw 'Verification failed'
@@ -115,7 +133,10 @@ export class OperatorBackendClient {
         } else {
             logger.info('Browser known to support 3PC: NO')
 
-            const redirectUrl = this.client.getRedirectReadUrl(getRequestUrl(req)).toString();
+            const request = this.getIdsPrefsRequestBuilder.buildRequest()
+            const redirectRequest = this.getIdsPrefsRequestBuilder.toRedirectRequest(request, getRequestUrl(req))
+
+            const redirectUrl =  this.getIdsPrefsRequestBuilder.getRedirectUrl(redirectRequest).toString()
             switch (this.redirectType) {
                 case RedirectType.http:
                     httpRedirect(res, redirectUrl)
