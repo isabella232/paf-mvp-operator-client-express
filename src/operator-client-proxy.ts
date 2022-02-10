@@ -1,15 +1,16 @@
 import {Express, Request, Response} from "express";
 import cors, {CorsOptions} from "cors";
 import {OperatorClient} from "./operator-client";
-import {GetIdsPrefsResponse, IdsAndPreferences} from "paf-mvp-core-js/dist/model/generated-model";
+import {Error, IdsAndPreferences, RedirectGetIdsPrefsResponse} from "paf-mvp-core-js/dist/model/generated-model";
 import {NewPrefs} from "paf-mvp-core-js/dist/model/model";
 import {jsonEndpoints, proxyEndpoints, proxyUriParams, redirectEndpoints} from "paf-mvp-core-js/dist/endpoints";
 import {httpRedirect} from "paf-mvp-core-js/dist/express";
 import {PublicKeys} from "paf-mvp-core-js/dist/crypto/keys";
+import {fromDataToObject} from "paf-mvp-core-js/dist/query-string";
 import {
+    Get3PCRequestBuilder,
     GetIdsPrefsRequestBuilder,
-    PostIdsPrefsRequestBuilder,
-    Get3PCRequestBuilder
+    PostIdsPrefsRequestBuilder
 } from "paf-mvp-core-js/dist/model/request-builders";
 
 /**
@@ -122,9 +123,22 @@ export const addOperatorClientProxyEndpoints = (app: Express, protocol: 'https' 
     // *************************************************************************************************** SIGN & VERIFY
     // *****************************************************************************************************************
 
-    app.post(`/prebid${proxyEndpoints.verifyRead}`, cors(corsOptions), (req, res) => {
-        const message = JSON.parse(req.body as string) as GetIdsPrefsResponse;
-        res.send(client.verifyReadResponseSignature(message))
+    app.post(`/prebid${proxyEndpoints.verifyRedirectRead}`, cors(corsOptions), (req, res) => {
+        const message = fromDataToObject<RedirectGetIdsPrefsResponse>(req.body);
+
+        if (!message.response) {
+            // FIXME do something smart in case of error
+            throw message.error
+        }
+
+        const verification = client.verifyReadResponseSignature(message.response);
+        if (!verification) {
+            const error: Error = {message: 'verification failed'}
+            res.send(error)
+        } else {
+            console.debug(message.response)
+            res.send(message.response)
+        }
     });
 
     app.post(`/prebid${proxyEndpoints.signPrefs}`, cors(corsOptions), (req, res) => {
