@@ -26,7 +26,7 @@ export class OperatorClient {
         const unsignedPreferences: UnsignedData<Preferences> = {
             version: 0,
             data: {
-                use_browsing_for_personalization: true
+                use_browsing_for_personalization: optIn
             },
             source: {
                 domain: this.host,

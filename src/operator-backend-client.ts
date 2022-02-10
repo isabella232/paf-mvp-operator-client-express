@@ -13,7 +13,14 @@ import {
     getPrebidDataCacheExpiration,
     UNKNOWN_TO_OPERATOR
 } from "paf-mvp-core-js/dist/cookies";
-import {httpRedirect, metaRedirect, setCookie, getPafDataFromQueryString} from "paf-mvp-core-js/dist/express";
+import {
+    httpRedirect,
+    metaRedirect,
+    getCookies,
+    setCookie,
+    getRequestUrl,
+    getPafDataFromQueryString
+} from "paf-mvp-core-js/dist/express";
 import {isBrowserKnownToSupport3PC} from "paf-mvp-core-js/dist/user-agent";
 import {PublicKeys} from "paf-mvp-core-js/dist/crypto/keys";
 import {GetIdsPrefsRequestBuilder} from "paf-mvp-core-js/dist/model/request-builders";
@@ -38,10 +45,6 @@ const logger = winston.createLogger({
 if (process.env.NODE_ENV !== 'production') {
     logger.add(new winston.transports.Console());
 }
-
-export const getCookies = (req: Request) => req.cookies ?? {}
-
-export const getRequestUrl = (req: Request, path = req.url) => new URL(path, `${req.protocol}://${req.get('host')}`)
 
 const saveCookieValueOrUnknown = <T>(res: Response, cookieName: string, cookieValue: T | undefined) => {
     logger.info(`Operator returned value for ${cookieName}: ${cookieValue !== undefined ? 'YES' : 'NO'}`)
@@ -136,7 +139,7 @@ export class OperatorBackendClient {
             const request = this.getIdsPrefsRequestBuilder.buildRequest()
             const redirectRequest = this.getIdsPrefsRequestBuilder.toRedirectRequest(request, getRequestUrl(req))
 
-            const redirectUrl =  this.getIdsPrefsRequestBuilder.getRedirectUrl(redirectRequest).toString()
+            const redirectUrl = this.getIdsPrefsRequestBuilder.getRedirectUrl(redirectRequest).toString()
             switch (this.redirectType) {
                 case RedirectType.http:
                     httpRedirect(res, redirectUrl)
