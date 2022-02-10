@@ -2,7 +2,7 @@ import {
     GetIdsPrefsRequest,
     GetIdsPrefsResponse,
     GetNewIdRequest,
-    Identifier,
+    Identifiers,
     IdsAndPreferences,
     PostIdsPrefsRequest,
     Preferences
@@ -120,7 +120,7 @@ export class OperatorClient {
         return this.getOperatorUrl(jsonEndpoints.verify3PC)
     }
 
-    buildPreferences(id: Identifier, optIn: boolean, timestamp = new Date().getTime()): Preferences {
+    buildPreferences(identifiers: Identifiers, optIn: boolean, timestamp = new Date().getTime()): Preferences {
         const unsignedPreferences: UnsignedData<Preferences> = {
             version: 0,
             data: {

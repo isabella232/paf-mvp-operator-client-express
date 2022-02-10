@@ -66,7 +66,7 @@ export const addOperatorClientProxyEndpoints = (app: Express, protocol: 'https'|
 
     app.post(`/prebid${signAndVerifyEndpoints.signPrefs}`, cors(corsOptions), (req, res) => {
         const {identifier, optIn} = JSON.parse(req.body as string) as NewPrefs;
-        res.send(client.buildPreferences(identifier, optIn))
+        res.send(client.buildPreferences([identifier], optIn))
     });
 
     app.post(`/prebid${signAndVerifyEndpoints.signWrite}`, cors(corsOptions), (req, res) => {

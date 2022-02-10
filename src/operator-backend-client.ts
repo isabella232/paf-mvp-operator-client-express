@@ -75,13 +75,13 @@ export class OperatorBackendClient {
         // 1. Any Prebid 1st party cookie?
         const cookies = getCookies(req);
 
-        const id = cookies[Cookies.ID];
-        const rawPreferences = cookies[Cookies.PREFS];
+        const rawIds = cookies[Cookies.identifiers];
+        const rawPreferences = cookies[Cookies.preferences];
 
-        if (id && rawPreferences) {
+        if (rawIds && rawPreferences) {
             logger.info('Cookie found: YES')
 
-            return fromCookieValues(id, rawPreferences)
+            return fromCookieValues(rawIds, rawPreferences)
         }
 
         logger.info('Cookie found: NO')
@@ -96,13 +96,9 @@ export class OperatorBackendClient {
             }
 
             // 3. Received data?
-
-
-            const returnedId = operatorData.body.identifiers?.[0]
-            const hasPersistedId = returnedId?.persisted === undefined || returnedId?.persisted
-
-            saveCookieValueOrUnknown(res, Cookies.ID, hasPersistedId ? returnedId : undefined);
-            saveCookieValueOrUnknown(res, Cookies.PREFS, operatorData.body.preferences);
+            const persistedIds = operatorData.body.identifiers.filter(identifier => identifier?.persisted !== false);
+            saveCookieValueOrUnknown(res, Cookies.identifiers, persistedIds.length === 0 ? undefined : persistedIds)
+            saveCookieValueOrUnknown(res, Cookies.preferences, operatorData.body.preferences);
 
             return operatorData.body
         }
