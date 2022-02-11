@@ -17,7 +17,7 @@ import {PrefsSigner} from "paf-mvp-core-js/dist/crypto/data-signature";
 import {PrivateKey, privateKeyFromString, PublicKeys} from "paf-mvp-core-js/dist/crypto/keys";
 import {jsonEndpoints, redirectEndpoints, uriParams} from "paf-mvp-core-js/dist/endpoints";
 
-// TODO all these methods should have signed messages
+// FIXME should probably be moved to core library
 export class OperatorClient {
     private readonly writeSigner = new PostIdPrefsRequestSigner()
     private readonly readSigner= new GetIdPrefsRequestSigner()
