@@ -1,10 +1,6 @@
 import {GetIdsPrefsResponse, Identifiers, Preferences} from "paf-mvp-core-js/dist/model/generated-model";
 import {UnsignedData} from "paf-mvp-core-js/dist/model/model";
-import {
-    GetIdsPrefsRequestSigner,
-    GetIdsPrefsResponseSigner,
-    PostIdsPrefsRequestSigner
-} from "paf-mvp-core-js/dist/crypto/message-signature";
+import {GetIdsPrefsResponseSigner} from "paf-mvp-core-js/dist/crypto/message-signature";
 import {PrefsSigner} from "paf-mvp-core-js/dist/crypto/data-signature";
 import {PrivateKey, privateKeyFromString, PublicKeys} from "paf-mvp-core-js/dist/crypto/keys";
 
@@ -24,7 +20,7 @@ export class OperatorClient {
 
     buildPreferences(identifiers: Identifiers, optIn: boolean, timestamp = new Date().getTime()): Preferences {
         const unsignedPreferences: UnsignedData<Preferences> = {
-            version: 0,
+            version: "0.1",
             data: {
                 use_browsing_for_personalization: optIn
             },
