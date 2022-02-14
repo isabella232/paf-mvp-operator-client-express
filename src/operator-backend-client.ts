@@ -2,24 +2,16 @@ import {Request, Response} from "express";
 import {OperatorClient,} from "./operator-client";
 import winston from "winston";
 import UAParser from "ua-parser-js";
+import {IdsAndOptionalPreferences, RedirectGetIdsPrefsResponse} from "paf-mvp-core-js/dist/model/generated-model";
+import {Cookies, getPrebidDataCacheExpiration} from "paf-mvp-core-js/dist/cookies";
+import {fromClientCookieValues, PafStatus, getPafStatus} from "paf-mvp-core-js/dist/operator-client-commons";
 import {
-    GetIdsPrefsResponse,
-    IdsAndOptionalPreferences,
-    RedirectGetIdsPrefsResponse
-} from "paf-mvp-core-js/dist/model/generated-model";
-import {
-    Cookies,
-    fromCookieValues,
-    getPrebidDataCacheExpiration,
-    UNKNOWN_TO_OPERATOR
-} from "paf-mvp-core-js/dist/cookies";
-import {
+    getCookies,
+    getPafDataFromQueryString,
+    getRequestUrl,
     httpRedirect,
     metaRedirect,
-    getCookies,
-    setCookie,
-    getRequestUrl,
-    getPafDataFromQueryString
+    setCookie
 } from "paf-mvp-core-js/dist/express";
 import {isBrowserKnownToSupport3PC} from "paf-mvp-core-js/dist/user-agent";
 import {PublicKeys} from "paf-mvp-core-js/dist/crypto/keys";
@@ -46,10 +38,10 @@ if (process.env.NODE_ENV !== 'production') {
     logger.add(new winston.transports.Console());
 }
 
-const saveCookieValueOrUnknown = <T>(res: Response, cookieName: string, cookieValue: T | undefined) => {
+const saveCookieValue = <T>(res: Response, cookieName: string, cookieValue: T | undefined) => {
     logger.info(`Operator returned value for ${cookieName}: ${cookieValue !== undefined ? 'YES' : 'NO'}`)
 
-    const valueToStore = cookieValue ? JSON.stringify(cookieValue) : UNKNOWN_TO_OPERATOR
+    const valueToStore = cookieValue ? JSON.stringify(cookieValue) : PafStatus.NOT_PARTICIPATING
 
     logger.info(`Save ${cookieName} value: ${valueToStore}`)
 
@@ -93,12 +85,6 @@ export class OperatorBackendClient {
         const rawIds = cookies[Cookies.identifiers];
         const rawPreferences = cookies[Cookies.preferences];
 
-        if (rawIds && rawPreferences) {
-            logger.info('Cookie found: YES')
-
-            return fromCookieValues(rawIds, rawPreferences)
-        }
-
         logger.info('Cookie found: NO')
 
         // 2. Redirected from operator?
@@ -118,13 +104,27 @@ export class OperatorBackendClient {
 
             // 3. Received data?
             const persistedIds = operatorData.body.identifiers.filter(identifier => identifier?.persisted !== false);
-            saveCookieValueOrUnknown(res, Cookies.identifiers, persistedIds.length === 0 ? undefined : persistedIds)
-            saveCookieValueOrUnknown(res, Cookies.preferences, operatorData.body.preferences);
+            saveCookieValue(res, Cookies.identifiers, persistedIds.length === 0 ? undefined : persistedIds)
+            saveCookieValue(res, Cookies.preferences, operatorData.body.preferences);
 
             return operatorData.body
         }
 
         logger.info('Redirected from operator: NO')
+
+        if (getPafStatus(rawIds, rawPreferences) === PafStatus.REDIRECT_NEEDED) {
+            logger.info('Redirect previously deferred')
+
+            this.redirectToRead(req, res, view);
+
+            return undefined;
+        }
+
+        if (rawIds && rawPreferences) {
+            logger.info('Cookie found: YES')
+
+            return fromClientCookieValues(rawIds, rawPreferences)
+        }
 
         // 4. Browser known to support 3PC?
         const userAgent = new UAParser(req.header('user-agent'));
@@ -132,24 +132,28 @@ export class OperatorBackendClient {
         if (isBrowserKnownToSupport3PC(userAgent.getBrowser())) {
             logger.info('Browser known to support 3PC: YES')
 
-            return fromCookieValues(undefined, undefined);
+            return fromClientCookieValues(undefined, undefined);
         } else {
             logger.info('Browser known to support 3PC: NO')
 
-            const request = this.getIdsPrefsRequestBuilder.buildRequest()
-            const redirectRequest = this.getIdsPrefsRequestBuilder.toRedirectRequest(request, getRequestUrl(req))
-
-            const redirectUrl = this.getIdsPrefsRequestBuilder.getRedirectUrl(redirectRequest).toString()
-            switch (this.redirectType) {
-                case RedirectType.http:
-                    httpRedirect(res, redirectUrl)
-                    break
-                case RedirectType.meta:
-                    metaRedirect(res, redirectUrl, view)
-                    break;
-            }
+            this.redirectToRead(req, res, view);
 
             return undefined;
+        }
+    }
+
+    private redirectToRead(req: Request, res: Response, view: string) {
+        const request = this.getIdsPrefsRequestBuilder.buildRequest()
+        const redirectRequest = this.getIdsPrefsRequestBuilder.toRedirectRequest(request, getRequestUrl(req))
+
+        const redirectUrl = this.getIdsPrefsRequestBuilder.getRedirectUrl(redirectRequest).toString()
+        switch (this.redirectType) {
+            case RedirectType.http:
+                httpRedirect(res, redirectUrl)
+                break
+            case RedirectType.meta:
+                metaRedirect(res, redirectUrl, view)
+                break;
         }
     }
 }
