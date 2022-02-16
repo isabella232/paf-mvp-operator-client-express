@@ -1,6 +1,6 @@
 {
   "name": "paf-mvp-operator-client-express",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Prebid Addressability Framework (PAF) Operator client: ExpressJS implementation",
   "main": "index.js",
   "type": "commonjs",
@@ -24,7 +24,7 @@
     "express": "^4.17.1",
     "ua-parser-js": "^1.0.2",
     "winston": "^3.4.0",
-    "paf-mvp-core-js": "criteo/paf-mvp-core-js#semver:0.1.4"
+    "paf-mvp-core-js": "criteo/paf-mvp-core-js#semver:0.1.5"
   },
   "devDependencies": {
     "@types/cors": "^2.8.12",
